@@ -2811,6 +2811,7 @@ dependencies = [
  "futures",
  "hex-literal",
  "mev-share",
+ "reqwest",
  "serde",
  "tokio",
  "tracing",
