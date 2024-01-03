@@ -39,6 +39,7 @@ struct WPrice {
 }
 
 const UNI_V3_POOL_ADDR: H160 = H160(hex!("FAD57d2039C21811C8F2B5D5B65308aa99D31559"));
+const AMOUNT:f64 = 1000.0;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -83,15 +84,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let spread:f64 = univ3_link_price - cb_link_price;
 
         if(spread > 0.03) {
-            let balance_from = provider.get_balance("0xeBec795c9c8bBD61FFc14A6662944748F299cAcf", None).await?;
 
-            info!("{{T: {}, UNI: {}, CB: {}, Spread: {}, B: {}}}", 
+            info!("{{T: {}, UNI: {}, CB: {}, Spread: {}}}", 
                   t, 
                   univ3_link_price, 
                   cb_link_price,
                   spread,
-                  balance_from
                 );
+
+            // Make UNI swap
+            let recipient = wallet.address();
+            let zeroForOne = false;
+            let amountSpecified = AMOUNT * univ3_link_price * 10.0_f64.powf(6.0);
+            let sqrtPriceLimitX96 = binding.0; // ????
+            //let data = b0;
+
+            let uni_cost = 95.5;
+            let erc20_transfer_cost = 44.9; 
+            let usdt_transfer_cost = 28.1; 
+            let uni_fee = 0.997;
+            
+            let estimated_reward = AMOUNT*(univ3_link_price*uni_fee - cb_link_price) - uni_cost - erc20_transfer_cost - usdt_transfer_cost;
+
+            println!("Estimated reward: {:?}", estimated_reward);
+
+            //let swap_tx = univ3pool 
+            //    .swap(
+            //        recipient,
+            //        zeroForOne,
+            //        amountSpecified,
+            //        sqrtPriceLimitX96,
+            //        data
+            //    )
+            //    .send()
+            //    .await?
+            //    .await?
+            //    .expect("Swap transaction failed");
+
+            //println!("🥳 Swap executed. Transaction Hash: {:?}", swap_tx.transaction_hash);
             // Sell UNIV3 BUY CB
         }
         if(spread < -0.03) {
@@ -101,6 +131,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                   cb_link_price,
                   spread
                 );
+            let uni_cost = 95.5;
+            let erc20_transfer_cost = 44.9; 
+            let usdt_transfer_cost = 28.1; 
+            let uni_fee = 0.997;
+            
+            let estimated_reward = AMOUNT*(univ3_link_price*uni_fee - cb_link_price) + uni_cost + erc20_transfer_cost + usdt_transfer_cost;
+
+            println!("Estimated reward: {:?}", estimated_reward);
+
             // Sell UNIV3 BUY CB
         }
         
